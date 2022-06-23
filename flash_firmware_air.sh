@@ -22,11 +22,11 @@ flash_device()
       fi
 
       echo '  flash '$dev_id
-      curl -X PUT -F file=@firmware.bin "https://api.particle.io/v1/devices/"$dev_id"?access_token=d62ff3fec8572001cd9aae8d7bdfa57391cbee65"
+      curl -X PUT -F file=@firmware.bin "https://api.particle.io/v1/devices/"$dev_id"?access_token=5236d3b07439604edc4ed5556bc573a86b6918c5"
       echo ' '
     done
 
-#    rm firmware.bin
+    rm firmware.bin
 
   else
 

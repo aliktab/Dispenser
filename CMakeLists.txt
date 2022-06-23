@@ -25,21 +25,21 @@ endfunction (add_lib)
 # common for particle
 
 include_directories(
-    ../firmware/hal/src/photon/wiced/RTOS/NuttX/ver7.8/include
-    ../firmware/system/inc
-    ../firmware/hal/inc
-    ../firmware/hal/shared
-    ../firmware/hal/src/stm32f2xx
-    ../firmware/services/inc
-    ../firmware/wiring/inc
-    ../firmware/user/inc
-    ../powershield/src
-    ../Adafruit/SSD1306/src
-    ../OledDsp/src
-    ../OneWire/src
-    ../TLC59xx/src
-    ../ArduinoJson/src
-    ../ArduinoJson/src/ArduinoJson
+    ../../Particle/firmware/hal/src/photon/wiced/RTOS/NuttX/ver7.8/include
+    ../../Particle/firmware/system/inc
+    ../../Particle/firmware/hal/inc
+    ../../Particle/firmware/hal/shared
+    ../../Particle/firmware/hal/src/stm32f2xx
+    ../../Particle/firmware/services/inc
+    ../../Particle/firmware/wiring/inc
+    ../../Particle/firmware/user/inc
+    ../../Particle/powershield/src
+    ../../Particle/Adafruit/SSD1306/src
+    ../../Particle/OledDsp/src
+    ../../Particle/OneWire/src
+    ../../Particle/TLC59xx/src
+    ../../Particle/ArduinoJson/src
+    ../../Particle/ArduinoJson/src/ArduinoJson
   )
 
 
