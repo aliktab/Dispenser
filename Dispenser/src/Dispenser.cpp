@@ -46,9 +46,10 @@ const float LOG_THRESHOLD_VOLUME   = 0.1;      // litre
 // pins definition
 const uint8_t WATER_COUNTER_PIN    = D2;
 const uint8_t WATER_RELAY_PIN      = D3;
-const uint8_t DRAIN_RELAY_PIN      = D4;
+const uint8_t FILL_RELAY_PIN       = D4;
+const uint8_t DRAIN_RELAY_PIN      = D5;
 
-const uint8_t ALL_RELAY_PINS[]     = { WATER_RELAY_PIN, DRAIN_RELAY_PIN };
+const uint8_t ALL_RELAY_PINS[]     = { WATER_RELAY_PIN, FILL_RELAY_PIN, DRAIN_RELAY_PIN };
 
 
 // basic constants and variables
@@ -60,8 +61,8 @@ const float LITERS_IN_COUNT        = 0.005f;  // litre  #TMP
 
 
 // pin states
-volatile bool  water_tick_state   = true;
-volatile float water_tick_value   = 0;
+volatile bool  fill_tick_state   = true;
+volatile float fill_tick_value   = 0;
 
 volatile time_t drain_start_time = 0;
 
@@ -84,6 +85,7 @@ struct PublicData
     pow    = 1;
 
     water  = 0;
+    fill   = 0;
     drain  = 0;
     
     ticks  = 0.0;
@@ -96,6 +98,7 @@ struct PublicData
   void reset()
   {
     water  = 0;
+    fill   = 0;
     drain  = 0;
 
     ticks  = 0.0;
@@ -124,6 +127,7 @@ struct PublicData
   void attach_particle()
   {
     CloudClass::variable("water", water);
+    CloudClass::variable("fill",  fill);
     CloudClass::variable("drain", drain);
 
     CloudClass::variable("ticks", ticks);
@@ -146,6 +150,7 @@ struct PublicData
     root["pow"] = pow;
 
     root["water"]  = water;
+    root["fill"]   = fill;
     root["drain"]  = drain;
 
     root["ticks"]  = ticks;
@@ -171,6 +176,7 @@ struct PublicData
       return true;
 
     return  (LOG_THRESHOLD_ON_OFF  <= abs(water  - _cmp.water))  ||
+            (LOG_THRESHOLD_ON_OFF  <= abs(fill   - _cmp.fill))   ||
             (LOG_THRESHOLD_ON_OFF  <= abs(drain  - _cmp.drain))  ||
 
             (LOG_THRESHOLD_VOLUME  <= abs(volume - _cmp.volume)) ||
@@ -189,6 +195,7 @@ struct PublicData
   long     pow;
 
   int      water;
+  int      fill;
   int      drain;
 
   double   ticks;
@@ -247,7 +254,7 @@ void loop()
   current_data.soc = fuel_gauge.getSoC();
 
 
-  // update water values
+  // update values
   if (current_data.volume > 0.0f)
   {
     drain_start_time = 0;
@@ -256,10 +263,10 @@ void loop()
 
   if (0 == drain_start_time)
   {
-    current_data.total  += water_tick_value;
-    current_data.volume -= water_tick_value;
+    current_data.total  += fill_tick_value;
+    current_data.volume -= fill_tick_value;
   }
-  water_tick_value = 0;
+  fill_tick_value = 0;
 
   if (current_data.volume < 0.0f)
   {
@@ -279,7 +286,8 @@ void loop()
 
   // update valves
   digitalWrite(WATER_RELAY_PIN, current_data.water > 0 ? HIGH : LOW);
-  digitalWrite(WATER_RELAY_PIN, current_data.drain > 0 ? HIGH : LOW);
+  digitalWrite(FILL_RELAY_PIN,  current_data.fill  > 0 ? HIGH : LOW);
+  digitalWrite(DRAIN_RELAY_PIN, current_data.drain > 0 ? HIGH : LOW);
 
 
   // save and send data to server if it was significantly changed
@@ -305,15 +313,15 @@ void loop()
 
 void on_tick_pin_changed()
 {
-  if (water_tick_state != digitalRead(WATER_COUNTER_PIN))
+  if (fill_tick_state != digitalRead(WATER_COUNTER_PIN))
   {
     delayMicroseconds(DELAY_DEBOUNCE_TIME * 1000);
 
     bool new_pin_state = (bool)digitalRead(WATER_COUNTER_PIN);
-    if (water_tick_state != new_pin_state)
+    if (fill_tick_state != new_pin_state)
     {
-      water_tick_value    += LITERS_IN_COUNT;
-      water_tick_state = new_pin_state;
+      fill_tick_value    += LITERS_IN_COUNT;
+      fill_tick_state = new_pin_state;
     }
   }
 }
